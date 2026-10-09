@@ -827,9 +827,9 @@ impl<'a> Printer<'a> {
                                                 || type_and_const_inputs.is_empty()
                                         }
 
-                                        TypeKind::QPtr | TypeKind::SpvStringLiteralForExtInst => {
-                                            true
-                                        }
+                                        TypeKind::QPtr
+                                        | TypeKind::SpvTypeOperand
+                                        | TypeKind::SpvStringLiteralForExtInst => true,
                                     };
 
                                     ty_def.attrs == AttrSet::default()
@@ -2437,6 +2437,12 @@ impl Print for TypeDef {
                                 TypeOrConst::Const(ct) => ct.print(printer),
                             }),
                         ),
+                    TypeKind::SpvTypeOperand => pretty::Fragment::new([
+                        printer.error_style().apply("type_of"),
+                        "(".into(),
+                        printer.declarative_keyword_style().apply("type"),
+                        ")".into(),
+                    ]),
                     TypeKind::SpvStringLiteralForExtInst => pretty::Fragment::new([
                         printer.error_style().apply("type_of").into(),
                         "(".into(),
@@ -2591,6 +2597,7 @@ impl Print for ConstDef {
                         printer.pretty_type_ascription_suffix(*ty),
                     ])
                 }
+                ConstKind::SpvTypeOperand(ty) => ty.print(printer),
                 &ConstKind::SpvStringLiteralForExtInst(s) => pretty::Fragment::new([
                     printer.pretty_spv_opcode(printer.spv_op_style(), wk.OpString),
                     "(".into(),
@@ -3309,7 +3316,7 @@ impl Print for FuncAt<'_, DataInst> {
                                     }
                                 }
                             }
-                            ConstKind::PtrToGlobalVar(_) => {}
+                            ConstKind::PtrToGlobalVar(_) | ConstKind::SpvTypeOperand(_) => {}
                         }
                     }
                     None

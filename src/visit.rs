@@ -315,7 +315,7 @@ impl InnerVisit for TypeDef {
 
         visitor.visit_attr_set_use(*attrs);
         match kind {
-            TypeKind::QPtr | TypeKind::SpvStringLiteralForExtInst => {}
+            TypeKind::QPtr | TypeKind::SpvTypeOperand | TypeKind::SpvStringLiteralForExtInst => {}
 
             TypeKind::SpvInst { spv_inst: _, type_and_const_inputs } => {
                 for &ty_or_ct in type_and_const_inputs {
@@ -343,6 +343,9 @@ impl InnerVisit for ConstDef {
                     visitor.visit_const_use(ct);
                 }
             }
+
+            ConstKind::SpvTypeOperand(ty) => visitor.visit_type_use(*ty),
+
             ConstKind::SpvStringLiteralForExtInst(_) => {}
         }
     }
